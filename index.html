@@ -3,28 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Usbekischer Genuss</title>
-  <script src="https://cloudflare.com"></script>
+  <title>Usbekischer Genuss – Speisekarte</title>
+  <script src="https://unpkg.com"></script>
   <style>
-    body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; }
+    body { margin: 0; background: #1a1a1a; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
     canvas { max-width: 100%; height: auto; display: block; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    #fallback { display: none; text-align: center; padding: 40px 20px; }
+    .btn { display: inline-block; margin-top: 15px; padding: 14px 28px; background: #d4af37; color: #000; text-decoration: none; font-weight: bold; border-radius: 8px; }
   </style>
 </head>
 <body>
+  <div id="fallback">
+    <h2>Usbekischer Genuss</h2>
+    <p>Speisekarte & Flyer ansehen:</p>
+    <a class="btn" href="flyer.pdf">Speisekarte öffnen (PDF)</a>
+  </div>
   <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
-    pdfjsLib.getDocument('flyer.pdf').promise.then(pdf => {
-      for (let i = 1; i <= pdf.numPages; i++) {
-        pdf.getPage(i).then(page => {
-          const viewport = page.getViewport({ scale: 2 });
-          const canvas = document.createElement('canvas');
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-          document.body.appendChild(canvas);
-          page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
-        });
-      }
-    });
+    const fallback = document.getElementById('fallback');
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com';
+      pdfjsLib.getDocument('./flyer.pdf').promise.then(pdf => {
+        for (let i = 1; i <= pdf.numPages; i++) {
+          pdf.getPage(i).then(page => {
+            const viewport = page.getViewport({ scale: 2 });
+            const canvas = document.createElement('canvas');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            document.body.appendChild(canvas);
+            page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport });
+          });
+        }
+      }).catch(() => { fallback.style.display = 'block'; });
+    } else {
+      fallback.style.display = 'block';
+    }
   </script>
 </body>
 </html>
